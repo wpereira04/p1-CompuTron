@@ -1,4 +1,13 @@
-﻿#include "computron.h"
+﻿////////////////////////////////////////////////////////
+//
+// ECE 3574, P1, Walter Pereira Cruz
+// File name: computron.cpp
+// Description: Contains the implementations for the computron
+// functions
+//				
+// Date:        02/26/2025
+//
+#include "computron.h"
 #include <fstream>
 #include <iomanip>
 
@@ -28,7 +37,7 @@ void load_from_file(std::array<int, memorySize>& memory, const std::string& file
     inputFile.close();
 }
 
-
+// returns the command type based on the provided opCode
 Command opCodeToCommand(size_t opCode) {
     switch (opCode) {
     case 10: return Command::read;
@@ -54,23 +63,15 @@ void execute(std::array<int, memorySize>& memory,
     const std::vector<int>& inputs) {
     size_t inputIndex{ 0 }; // Tracks input
     do {
-        size_t* reg = icPtr; // register
-        *irPtr = memory[*icPtr]; // may or may not be wrong
+        *irPtr = memory[*icPtr];
         *opCodePtr = *irPtr / 100;
         *opPtr = *irPtr % 100;
-        //instruction counter to register
-        //instructionRegister = memory [instructionCounter];
-        //operationCode = instructionRegister / 100; // divide
-        //operand = instructionRegister % 100; // remainder
+        
         switch (int word{}; opCodeToCommand(*opCodePtr)) {
         case Command::read:
             word = inputs[inputIndex];
-            memory[*opPtr] = word; // modified this might be assign *opPtr to word
+            memory[*opPtr] = word;
             *icPtr = *icPtr + 1;
-            // could be following line
-            // *icPtr = *icPtr + 1;
-            // Assign the value of 'word' to the memory location pointed to by 'opPtr'
-            // Increment the instruction counter (icPtr) to point to the next instruction
             inputIndex++;
             break;
         case Command::write:
@@ -78,28 +79,20 @@ void execute(std::array<int, memorySize>& memory,
             // cout only allowed for dump, so this case
             // only increments the icPtr
             *icPtr = *icPtr + 1;
-            //Dereference 'icPtr' to access the instruction counter and increment its value by 1
-             // use the below cout if needed but comment before submission
-            //std::cout << "Contents of " << std::setfill('0') << std::setw(2)
-            //      << *opPtr << " : " << memory[*opPtr] << "\n";
             break;
         case Command::load:
-            *acPtr = memory[*opPtr]; // this might be assign *opPtr to acPtr
+            // loads a value from the memory to the accumulator
+            *acPtr = memory[*opPtr];
             *icPtr = *icPtr + 1;
-            // could be following line
-            // *icPtr = *icPtr + 1;
-            //Load the value from the memory location pointed to by 'opPtr' into the accumulator (acPtr)
-            //Increment the instruction counter (icPtr) to point to the next instruction
             break;
         case Command::store:
+            // stores a value from the accumulator to the memory
             memory[*opPtr] = *acPtr;
             *icPtr = *icPtr + 1;
-            // could be following line
-            // *icPtr = *icPtr + 1;
-            // Store the value in the accumulator (acPtr) into the memory location pointed to by 'opPtr'
-            // Increment the instruction counter (icPtr) to move to the next instruction
             break;
         case Command::add:
+            // adds accumulator value and a value in memory, checks if the word is valid
+            // and sets accumulator to the word if valid.
             word = *acPtr + memory[*opPtr];
             if (validWord(word)) { 
                 *acPtr = word;
@@ -108,11 +101,10 @@ void execute(std::array<int, memorySize>& memory,
             else {
                 throw std::runtime_error("invalid_input");
             }
-            // Add the value in the accumulator (acPtr) to the value in memory at the location pointed to by 'opPtr' and store the result in 'word'
-            // If the result is valid, store it in the accumulator and increment the instruction counter
-            // / If the result is invalid, throw a runtime error 
             break;
         case Command::subtract:
+            // subtracts accumulator value and a value in memory, checks if the word is valid
+            // and sets accumulator to the word if valid.
             word = *acPtr - memory[*opPtr];
             if (validWord(word)) {
                 *acPtr = word;
@@ -121,11 +113,10 @@ void execute(std::array<int, memorySize>& memory,
             else {
                 throw std::runtime_error("invalid_input");
             }
-            // Subtract the value in memory at the location pointed to by 'opPtr' from the value in the accumulator (acPtr) and store the result in 'word'
-            // If the result is valid, store it in the accumulator and increment the instruction counter
-            // / If the result is invalid, throw a runtime error 
             break;
         case Command::multiply:
+            // multiplies accumulator value and a value in memory, checks if the word is valid
+            // and sets accumulator to the word if valid.
             word = *acPtr * memory[*opPtr];
             if (validWord(word)) {
                 *acPtr = word;
@@ -134,9 +125,11 @@ void execute(std::array<int, memorySize>& memory,
             else {
                 throw std::runtime_error("invalid_input");
             }
-            // as above do it for multiplication
             break;
         case Command::divide:
+            // divides accumulator value and a value in memory, checks if the word is valid
+            // and sets accumulator to the word if valid. Will also throw if dividing by 0
+            if (memory[*opPtr] == 0) throw std::runtime_error("dividing by zero");
             word = *acPtr / memory[*opPtr];
             if (validWord(word)) {
                 *acPtr = word;
@@ -145,22 +138,25 @@ void execute(std::array<int, memorySize>& memory,
             else {
                 throw std::runtime_error("invalid_input");
             }
-            // as above do it for division
             break;
         case Command::branch:
+            // branches the instructionCounter to the given operand
             *icPtr = *opPtr;
             break;
         case Command::branchNeg:
+            // branches the instructionCounter to the given operand
+            // if accumulator is negative
             *acPtr < 0 ? *icPtr = *opPtr : ++(*icPtr);
             break;
         case Command::branchZero:
+            // branches the instructionCounter to the given operand
+            // if accumulator is zero
             *acPtr == 0 ? *icPtr = *opPtr : ++(*icPtr);
             break;
         case Command::halt:
-            //delete icPtr;
+            // ends the program
             break;
         default:
-            // any instruction required
             break;
         };
         // You may modify the below while condition if required
@@ -177,8 +173,9 @@ void dump(std::array<int, memorySize>& memory, int accumulator,
     int col;
     int row{ 0 }; // must be initialized
     // prints register dump
+    // keeps track of the sign of a data word
     std::string sign = "";
-    std::cout << "Registers\n"<<"accumulator";
+    std::cout << "Registers\n" << "accumulator";
     if (accumulator >= 0) sign = "+";
     else sign = "-";
     std::cout << std::setw(11)<< std::setfill(' ') << sign << std::setw(4) << std::setfill('0') << abs(accumulator) << '\n'
@@ -192,6 +189,7 @@ void dump(std::array<int, memorySize>& memory, int accumulator,
     std::cout << '\n';
     // prints the memory dump
     for (size_t i = 0; i < memorySize; i++) {
+        // uses modulous operator and division to find row and column and ensure table prints properly
         col = i % 10;
         if (row < floor(i / 10) * 10 || i == 0) std::cout << std::setw(2) << floor(i / 10) * 10 << " ";
         row = floor(i / 10) * 10;

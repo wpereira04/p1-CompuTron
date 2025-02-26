@@ -1,4 +1,13 @@
-
+////////////////////////////////////////////////////////
+//
+// ECE 3574, P1, Walter Pereira Cruz
+// File name: main.cpp
+// Description: Contains the main function which runs
+// an instruction set from a file "p1.txt".
+//				
+// 
+// Date:        02/26/2025
+//
 
 #include "computron.h"
 int main() {

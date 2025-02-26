@@ -1,4 +1,12 @@
-
+////////////////////////////////////////////////////////
+//
+// ECE 3574, P1, Walter Pereira Cruz
+// File name: test.cpp
+// Description: Contains the tests for the computron
+// functions.
+//				
+// Date:        02/26/2025
+//
 #define CATCH_CONFIG_MAIN
 #include "catch2/catch.hpp"
 #include "computron.h"
@@ -10,8 +18,8 @@ TEST_CASE("Tests for the CompuTron Project") {
     int instructionRegister{ 0 };
     size_t operationCode{ 0 };
     size_t operand{ 0 };
-
     // inputs not declared here to change for each test section
+    
     SECTION("Testing read, write, load, and store", "execute()") {
         const std::vector<int> inputs{ 5, -6 }; // both positive and negative values
         memory[0] = 1008; // read, 00
@@ -24,6 +32,7 @@ TEST_CASE("Tests for the CompuTron Project") {
         memory[7] = 4300; // halt, 07
         REQUIRE_NOTHROW(execute(memory, &accumulator, &instructionCounter,
             &instructionRegister, &operationCode, &operand, inputs));
+        // checks if changed variables and memory locations are correct
         REQUIRE(accumulator == -6);
         REQUIRE(instructionCounter == 7);
         REQUIRE(instructionRegister == 4300);
@@ -61,6 +70,7 @@ TEST_CASE("Tests for the CompuTron Project") {
         memory[16] = 4300; // halt, 16
         REQUIRE_NOTHROW(execute(memory, &accumulator, &instructionCounter,
             &instructionRegister, &operationCode, &operand, inputs));
+        // checks if changed variables and memory locations are correct
         REQUIRE(accumulator == -8);
         REQUIRE(instructionCounter == 16);
         REQUIRE(instructionRegister == 4300);
@@ -91,6 +101,7 @@ TEST_CASE("Tests for the CompuTron Project") {
         memory[11] = 4300; // halt, 16
         REQUIRE_NOTHROW(execute(memory, &accumulator, &instructionCounter,
             &instructionRegister, &operationCode, &operand, inputs));
+        // checks if changed variables
         REQUIRE(accumulator == -1);
         REQUIRE(instructionCounter == 11);
         REQUIRE(instructionRegister == 4300);
@@ -137,8 +148,6 @@ TEST_CASE("Tests for the CompuTron Project") {
         instructionCounter = 0;
         memory[3] = 3313; // multiply, 03
         memory[4] = 4300; // halt, 04
-        memory[5] = 0; // clear mem
-        memory[6] = 0; // clear mem
         REQUIRE_THROWS(execute(memory, &accumulator, &instructionCounter,
             &instructionRegister, &operationCode, &operand, inputs2));
 
